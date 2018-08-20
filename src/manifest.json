@@ -1,0 +1,59 @@
+{
+  "name": "Lorem Picsum",
+  "description": "Drop in random images via Lorem Picsum -- color, b/w, blurry, cropped to one edge, you name it!",
+  "author": "Tristan Denyer",
+  "compatibleVersion": 50,
+  "bundleVersion": 1,
+  "icon": "icon.png",
+  "commands": [
+    {
+      "name": "Set with random image",
+      "identifier": "randomImages",
+      "shortcut": "ctrl command l",
+      "script": "./lorem-picsum.js",
+      "handler": "onRandom"
+    },
+    {
+      "name": "Set with blurred image",
+      "identifier": "blur",
+      "script": "./lorem-picsum.js",
+      "handler": "onBlur"
+    },
+    {
+      "name": "Set with grayscale image",
+      "identifier": "grayscale",
+      "script": "./lorem-picsum.js",
+      "handler": "onGrayscale"
+    },
+    {
+      "name": "Set with a blurred grayscale image",
+      "identifier": "grayscaleBlur",
+      "script": "./lorem-picsum.js",
+      "handler": "onGrayscaleBlur"
+    },
+    {
+      "name": "Set an image with cropped gravity",
+      "identifier": "croppedGravity",
+      "script": "./lorem-picsum.js",
+      "handler": "onGravity"
+    },
+    {
+      "name": "Image scale settings",
+      "identifier": "settings",
+      "script": "./lorem-picsum.js",
+      "handler": "onSettings"
+    }
+  ],
+  "menu": {
+    "title": "Lorem Picsum",
+    "items": [
+      "randomImages",
+      "blur",
+      "grayscale",
+      "grayscaleBlur",
+      "croppedGravity",
+      "-",
+      "settings"
+    ]
+  }
+}

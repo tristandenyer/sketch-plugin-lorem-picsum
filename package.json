@@ -1,0 +1,27 @@
+{
+  "name": "lorem-picsum",
+  "description": "Drop in random images via Lorem Picsum -- color, b/w, blurry, cropped to one edge, you name it!",
+  "author": "Tristan Denyer <tristan@tristandenyer.com> (https://tristandenyer.com/)",
+  "version": "0.1.0",
+  "engines": {
+    "sketch": ">=3.0"
+  },
+  "skpm": {
+    "name": "lorem-picsum",
+    "manifest": "src/manifest.json",
+    "main": "lorem-picsum.sketchplugin",
+    "assets": [
+      "assets/**/*"
+    ]
+  },
+  "scripts": {
+    "build": "skpm-build",
+    "watch": "skpm-build --watch",
+    "start": "skpm-build --watch --run",
+    "postinstall": "npm run build && skpm-link"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@skpm/builder": "^0.5.9"
+  }
+}
