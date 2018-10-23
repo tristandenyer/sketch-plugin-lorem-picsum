@@ -23,5 +23,9 @@
   "license": "MIT",
   "devDependencies": {
     "@skpm/builder": "^0.5.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tristandenyer/sketch-plugin-lorem-picsum.git"
   }
 }
