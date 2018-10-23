@@ -17,7 +17,7 @@ The Lorem Picsum plugin requires Sketch 50 or above.
 1. [Download](https://github.com/tristandenyer/sketch-plugin-lorem-picsum/releases/latest) the latest release of the Lorem Picum Sketch plugin.
 2. Un-zip the download.
 
-> :heavy*exclamation_mark: I strongly recommend you save all of your current work in Sketch \_before* you install and use any plugin!
+> :heavy_exclamation_mark: I strongly recommend you save all of your current work in Sketch _before_ you install and use any plugin!
 
 3. Double-click on `lorem-picsum.sketchplugin` file from download.
 4. Launch Sketch, then open a file (new or existing).
