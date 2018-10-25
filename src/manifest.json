@@ -2,7 +2,7 @@
   "name": "Lorem Picsum",
   "description": "Drop in random images via Lorem Picsum -- color, b/w, blurry, cropped to one edge, you name it!",
   "author": "Tristan Denyer",
-  "compatibleVersion": 50,
+  "compatibleVersion": 52,
   "bundleVersion": 1,
   "icon": "icon.png",
   "commands": [

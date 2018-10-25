@@ -2,7 +2,7 @@
   "name": "lorem-picsum",
   "description": "Drop in random images via Lorem Picsum -- color, b/w, blurry, cropped to one edge, you name it!",
   "author": "Tristan Denyer <tristan@tristandenyer.com> (https://tristandenyer.com/)",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "sketch": ">=3.0"
   },
@@ -22,7 +22,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@skpm/builder": "^0.5.9"
+    "@skpm/builder": "^0.5.10"
   },
   "repository": {
     "type": "git",
