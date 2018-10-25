@@ -1,7 +1,6 @@
-const UI = require('sketch/ui'),
-      DOM = require('sketch/dom'),
-      Settings = require('sketch/settings'),
-      SymbolMaster = DOM.SymbolMaster;
+const DOM = require("sketch/dom"),
+  UI = require("sketch/ui"),
+  Settings = require("sketch/settings");
 
 var options = initOptions();
 
@@ -75,22 +74,18 @@ export function onSettings(context) {
 function loremPicsum(type = 'random') {
 
   var document = DOM.getSelectedDocument(),
-      selection = document.selectedLayers,
-      selectedLayers = document.selectedLayers.layers;
+    selectedLayers = document.selectedLayers.layers;
 
-  let imageLayers = selectedLayers.filter(layer => layer.type === 'Shape' || layer.type === 'SymbolInstance');
+  let imageLayers = selectedLayers.filter(layer => layer.type === 'Shape' || layer.type === "ShapePath" || layer.type === 'SymbolInstance');
 
   if (imageLayers.length === 0) {
     UI.message('Select some shapes or symbols');
   } else {
-
-    let foreignSymbolMasters = getForeignSymbolMasters(document);
     let imageIndex = 1;
 
     imageLayers.forEach(layer => {
 
-      if (layer.type === 'Shape') {
-
+      if (layer.type === "Shape" || layer.type === "ShapePath") {
         let size = {
           width: layer.frame.width,
           height: layer.frame.height
@@ -117,98 +112,60 @@ function loremPicsum(type = 'random') {
         }
 
       } else {
+        let imageOverrides = layer.overrides.filter(isEditableImage);
 
-        let imageOverrides = layer.overrides.filter(override => {
-          return override.property === 'image' && !override.sketchObject.isAffectedLayerOrParentLocked() && !override.sketchObject.isAffectedLayerOrParentHidden(); // locked and hidden layers must be filtered because they are not excluded by API
-        });
-        let scale = getInstanceScale(layer.sketchObject); // Approx. scale depending on constraints
-        let largestOverride, largestSize, largestArea = 0;
+        let largestOverride,
+          largestSize,
+          largestArea = 0;
 
         imageOverrides.forEach(override => {
+          let ids = override.path.split("/");
+          let id = ids[ids.length - 1];
 
-          let affectedLayer = override.sketchObject.affectedLayer();
+          let found = findLayerRecursiveByID(layer, id);
 
-          let size = {
-            width: affectedLayer.frame().width() * scale.x,
-            height: affectedLayer.frame().height() * scale.y
-          };
-
-          // Calculate scale factor for nested overrides
-          let IDs = override.path.split('/');
-
-          for (let i = 0; i < IDs.length - 1; i++) {
-            let sketchObject;
-
-            let layerInPath = document.getLayerWithID(IDs[i]);
-            if (layerInPath === undefined) {
-              sketchObject = getForeignLayerWithID(IDs[i], foreignSymbolMasters);
-            } else {
-              sketchObject = layerInPath.sketchObject;
+          if (found) {
+            let size = {
+              width: found.frame.width,
+              height: found.frame.height
+            };
+            let area = size.width * size.height;
+            if (area > largestArea) {
+              largestArea = area;
+              largestSize = size;
+              largestOverride = override;
             }
-
-            let scale = getInstanceScale(sketchObject);
-            size.width = size.width * scale.x;
-            size.height = size.height * scale.y;
           }
-
-          let area = size.width * size.height;
-          if (area > largestArea) {
-            largestArea = area;
-            largestSize = size;
-            largestOverride = override;
-          }
-
         });
+        if (largestOverride) {
+          let imageURL = getLoremPicsumURL(largestSize, type, imageIndex++);
 
-        let imageURL = getLoremPicsumURL(largestSize, type, imageIndex++);
-
-        try {
-          let response = requestWithURL(imageURL);
-          if (response) {
-            let nsimage = NSImage.alloc().initWithData(response);
-            // layer.setOverrideValue(largestOverride, nsimage); // A bug in the API is preventing this from working
-            let imageData = MSImageData.alloc().initWithImage(nsimage);
-            let overridePoint = largestOverride.sketchObject.overridePoint();
-            layer.sketchObject.setValue_forOverridePoint_(imageData, overridePoint);
-          } else {
-            throw '⚠️ Lorem Picsum is not responding...';
+          try {
+            let response = requestWithURL(imageURL);
+            if (response) {
+              let nsimage = NSImage.alloc().initWithData(response);
+              // layer.setOverrideValue(largestOverride, nsimage); // A bug in the API is preventing this from working
+              let imageData = MSImageData.alloc().initWithImage(nsimage);
+              let overridePoint = largestOverride.sketchObject.overridePoint();
+              layer.sketchObject.setValue_forOverridePoint_(
+                imageData,
+                overridePoint
+              );
+            } else {
+              throw '⚠️ Lorem Picsum is not responding...';
+            }
+          } catch (e) {
+            log(e);
+            UI.message(e);
+            return;
           }
-        } catch (e) {
-          log(e);
-          UI.message(e);
-          return;
         }
       }
     });
   }
 }
 
-function getForeignSymbolMasters(document) {
-  let foreignSymbolList = document.sketchObject.documentData().foreignSymbols();
-  let symbolMasters = [];
-  foreignSymbolList.forEach(foreignSymbol => {
-    symbolMasters.push(SymbolMaster.fromNative(foreignSymbol.localObject()));
-  });
-  return symbolMasters;
-}
-
-function getForeignLayerWithID(layerID, masters) {
-  let match;
-  for (let master of masters) {
-    match = master.sketchObject.layers().find(layer => layer.objectID() == layerID);
-    if (match) {break;}
-  }
-  return match;
-}
-
-function getInstanceScale(instance) { // Expects sketchObject
-  let master = instance.symbolMaster();
-  let xScale = instance.frame().width() / master.frame().width();
-  let yScale = instance.frame().height() / master.frame().height();
-  return {x: xScale, y: yScale};
-}
-
-function getLoremPicsumURL(size, type, index) {
+function getLoremPicsumURL(size, type) {
   let width = Math.round(size.width * options.scaleFactor);
   let height = Math.round(size.height * options.scaleFactor);
 
@@ -229,3 +186,63 @@ function requestWithURL(url) {
   let request = NSURLRequest.requestWithURL(NSURL.URLWithString(url));
   return NSURLConnection.sendSynchronousRequest_returningResponse_error(request, null, null);
 }
+
+// Sketch 52 API updates - thank you again @perrysmotors!
+const methodAvailable = MSAvailableOverride.instancesRespondToSelector(
+  NSSelectorFromString("isEditable")
+);
+
+// Locked and hidden layers must be filtered because they are not excluded by API
+function isEditableImage(override) {
+  if (methodAvailable) {
+    return override.property === "image" && override.sketchObject.isEditable();
+  } else {
+    // Fall back to API pre Sketch 52
+    return (
+      override.property === "image" &&
+      !override.sketchObject.isAffectedLayerOrParentLocked() &&
+      !override.sketchObject.isAffectedLayerOrParentHidden()
+    );
+  }
+}
+
+// Get the modified master based on the symbol instance (with correct frame for overrides).
+function modifiedMasterByApplyingInstance(symbolInstance) {
+  const documentData = DOM.getSelectedDocument().sketchObject.documentData();
+  const symbolID = symbolInstance.sketchObject.symbolID();
+  const immutableInstance = symbolInstance.sketchObject.immutableModelObject();
+  const immutableMaster = documentData
+    .symbolWithID(symbolID)
+    .immutableModelObject();
+
+  return DOM.fromNative(
+    immutableMaster
+      .modifiedMasterByApplyingInstance_inDocument_(immutableInstance, null)
+      .newMutableCounterpart()
+  );
+}
+
+function findLayerRecursiveByID(element, id) {
+  let foundElement;
+
+  if (element.type === "SymbolInstance") {
+    element = modifiedMasterByApplyingInstance(element);
+  }
+
+  if (element.layers && element.layers.length) {
+    foundElement = element.layers.find(layer => layer.id === id);
+
+    if (!foundElement) {
+      for (let i = 0; i < element.layers.length; i++) {
+        const result = findLayerRecursiveByID(element.layers[i], id);
+        if (result) {
+          foundElement = result;
+          break;
+        }
+      }
+    }
+  }
+
+  return foundElement;
+}
+
