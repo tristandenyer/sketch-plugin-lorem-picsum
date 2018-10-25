@@ -1,3 +1,5 @@
+> **NOTE:** I retested this in the latest Sketch (52) and it _does NOT_ work. I tested it in version 51, and it _does_ work. I will be working on an update for this.
+
 # Lorem Picsum Sketch Plugin
 
 A Sketch plugin that can fill shapes and symbols with random images from [Lorem Picsum site](https://picsum.photos/ "Lorem Picsum").
